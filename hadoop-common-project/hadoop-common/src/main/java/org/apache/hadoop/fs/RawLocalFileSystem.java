@@ -105,8 +105,12 @@ public class RawLocalFileSystem extends FileSystem {
     
     @Override
     public void seek(long pos) throws IOException {
+      long startTime = System.nanoTime();
+      statistics.incrementSeekOps(1);
       fis.getChannel().position(pos);
       this.position = pos;
+      long elapsedTime = System.nanoTime() - startTime;
+      statistics.incrementMetadataTime(elapsedTime);
     }
     
     @Override
@@ -125,7 +129,13 @@ public class RawLocalFileSystem extends FileSystem {
     @Override
     public int available() throws IOException { return fis.available(); }
     @Override
-    public void close() throws IOException { fis.close(); }
+    public void close() throws IOException { 
+        long startTime = System.nanoTime();
+        fis.close();
+        statistics.incrementFileCloseOps(1);
+        long elapsedTime = System.nanoTime() - startTime;
+        statistics.incrementMetadataTime(elapsedTime);
+    }
     @Override
     public boolean markSupported() { return false; }
     
@@ -174,6 +184,7 @@ public class RawLocalFileSystem extends FileSystem {
     
     @Override
     public long skip(long n) throws IOException {
+      statistics.incrementSeekOps(1);
       long value = fis.skip(n);
       if (value > 0) {
         this.position += value;
@@ -189,11 +200,16 @@ public class RawLocalFileSystem extends FileSystem {
   
   @Override
   public FSDataInputStream open(Path f, int bufferSize) throws IOException {
+    statistics.incrementFileOpenOps(1);
+    long startTime = System.nanoTime();
     if (!exists(f)) {
       throw new FileNotFoundException(f.toString());
     }
-    return new FSDataInputStream(new BufferedFSInputStream(
+    FSDataInputStream result = new FSDataInputStream(new BufferedFSInputStream(
         new LocalFSFileInputStream(f), bufferSize));
+    long openTime = System.nanoTime() - startTime;
+    statistics.incrementMetadataTime(openTime);
+    return result;
   }
   
   /*********************************************************
@@ -203,20 +219,31 @@ public class RawLocalFileSystem extends FileSystem {
     private FileOutputStream fos;
     
     private LocalFSFileOutputStream(Path f, boolean append) throws IOException {
+      long startTime = System.nanoTime();
+      statistics.incrementFileOpenOps(1);
       this.fos = new FileOutputStream(pathToFile(f), append);
+      long elapsedTime = System.nanoTime() - startTime;
+      statistics.incrementMetadataTime(elapsedTime);
     }
     
     /*
      * Just forward to the fos
      */
     @Override
-    public void close() throws IOException { fos.close(); }
+    public void close() throws IOException { 
+        long startTime = System.nanoTime();
+        statistics.incrementFileCloseOps(1);
+        fos.close();
+        long elapsedTime = System.nanoTime() - startTime;
+        statistics.incrementMetadataTime(elapsedTime);
+    }
     @Override
     public void flush() throws IOException { fos.flush(); }
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
       try {
         fos.write(b, off, len);
+        statistics.incrementBytesWritten(len);
       } catch (IOException e) {                // unexpected exception
         throw new FSError(e);                  // assume native fs error
       }
@@ -226,6 +253,7 @@ public class RawLocalFileSystem extends FileSystem {
     public void write(int b) throws IOException {
       try {
         fos.write(b);
+        statistics.incrementBytesWritten(1);
       } catch (IOException e) {              // unexpected exception
         throw new FSError(e);                // assume native fs error
       }

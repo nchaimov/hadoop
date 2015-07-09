@@ -2617,6 +2617,10 @@ public abstract class FileSystem extends Configured implements Closeable {
       volatile int readOps;
       volatile int largeReadOps;
       volatile int writeOps;
+      volatile int fileOpenOps;
+      volatile int fileCloseOps;
+      volatile int seekOps;
+      volatile long metadataTime;
       /**
        * Stores a weak reference to the thread owning this StatisticsData.
        * This allows us to remove StatisticsData objects that pertain to
@@ -2637,6 +2641,10 @@ public abstract class FileSystem extends Configured implements Closeable {
         this.readOps += other.readOps;
         this.largeReadOps += other.largeReadOps;
         this.writeOps += other.writeOps;
+        this.fileOpenOps += other.fileOpenOps;
+        this.fileCloseOps += other.fileCloseOps;
+        this.seekOps += other.seekOps;
+        this.metadataTime += other.metadataTime;
       }
 
       /**
@@ -2648,13 +2656,18 @@ public abstract class FileSystem extends Configured implements Closeable {
         this.readOps = -this.readOps;
         this.largeReadOps = -this.largeReadOps;
         this.writeOps = -this.writeOps;
+        this.fileOpenOps = -this.fileOpenOps;
+        this.fileCloseOps = -this.fileCloseOps;
+        this.metadataTime = -this.metadataTime;
       }
 
       @Override
       public String toString() {
         return bytesRead + " bytes read, " + bytesWritten + " bytes written, "
             + readOps + " read ops, " + largeReadOps + " large read ops, "
-            + writeOps + " write ops";
+            + writeOps + " write ops, " + fileOpenOps + " file open ops, "
+            + fileCloseOps + " file close ops, " + seekOps + " seek ops, "
+            + metadataTime + " cumulative time on metadata ops";
       }
     }
 
@@ -2768,6 +2781,38 @@ public abstract class FileSystem extends Configured implements Closeable {
      */
     public void incrementWriteOps(int count) {
       getThreadData().writeOps += count;
+    }
+
+    /**
+     * Increment the number of file open operations
+     * @param count number of file open operations
+     */
+    public void incrementFileOpenOps(int count) {
+      getThreadData().fileOpenOps += count;
+    }
+
+    /**
+     * Increment the number of file close operations
+     * @param count number of file open operations
+     */
+    public void incrementFileCloseOps(int count) {
+      getThreadData().fileCloseOps += count;
+    }
+
+    /**
+     * Increment the number of seek operations
+     * @param count number of seek operations
+     */
+    public void incrementSeekOps(int count) {
+      getThreadData().seekOps += count;
+    }
+
+    /**
+     * Increment the cumulative time spent in metadata ops
+     * @param time time spent in metadata op
+     */
+    public void incrementMetadataTime(long time) {
+      getThreadData().metadataTime += time;
     }
 
     /**
@@ -2899,6 +2944,82 @@ public abstract class FileSystem extends Configured implements Closeable {
       });
     }
 
+    /**
+     * Get the number of file open operations 
+     * @return number of file open operations
+     */
+    public int getFileOpenOps() {
+      return visitAll(new StatisticsAggregator<Integer>() {
+        private int fileOpenOps = 0;
+
+        @Override
+        public void accept(StatisticsData data) {
+          fileOpenOps += data.fileOpenOps;
+        }
+
+        public Integer aggregate() {
+          return fileOpenOps;
+        }
+      });
+    }
+
+    /**
+     * Get the number of file close operations 
+     * @return number of file close operations
+     */
+    public int getFileCloseOps() {
+      return visitAll(new StatisticsAggregator<Integer>() {
+        private int fileCloseOps = 0;
+
+        @Override
+        public void accept(StatisticsData data) {
+          fileCloseOps += data.fileCloseOps;
+        }
+
+        public Integer aggregate() {
+          return fileCloseOps;
+        }
+      });
+    }
+
+    /**
+     * Get the number of seek operations 
+     * @return number of seek operations
+     */
+    public int getSeekOps() {
+      return visitAll(new StatisticsAggregator<Integer>() {
+        private int seekOps = 0;
+
+        @Override
+        public void accept(StatisticsData data) {
+          seekOps += data.seekOps;
+        }
+
+        public Integer aggregate() {
+          return seekOps;
+        }
+      });
+    }
+
+    /**
+     * Get the cumulative time spent in metadata ops
+     * @return cumulative time spent in metadata ops
+     */
+    public long getMetadataTime() {
+      return visitAll(new StatisticsAggregator<Long>() {
+        private long metadataTime = 0;
+
+        @Override
+        public void accept(StatisticsData data) {
+          metadataTime += data.metadataTime;
+        }
+
+        @Override
+        public Long aggregate() {
+          return metadataTime;
+        }
+      });
+    }
 
     @Override
     public String toString() {
