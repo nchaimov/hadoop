@@ -112,29 +112,29 @@ add_library(posix_util
     main/native/util/posix_util.c
 )
 
-add_executable(test_libhdfs_ops
-    main/native/libhdfs/test/test_libhdfs_ops.c
-)
-target_link_libraries(test_libhdfs_ops
-    hdfs
-    ${JAVA_JVM_LIBRARY}
-)
-
-add_executable(test_libhdfs_read
-    main/native/libhdfs/test/test_libhdfs_read.c
-)
-target_link_libraries(test_libhdfs_read
-    hdfs
-    ${JAVA_JVM_LIBRARY}
-)
-
-add_executable(test_libhdfs_write
-    main/native/libhdfs/test/test_libhdfs_write.c
-)
-target_link_libraries(test_libhdfs_write
-    hdfs
-    ${JAVA_JVM_LIBRARY}
-)
+#add_executable(test_libhdfs_ops
+#    main/native/libhdfs/test/test_libhdfs_ops.c
+#)
+#target_link_libraries(test_libhdfs_ops
+#    hdfs
+#    ${JAVA_JVM_LIBRARY}
+#)
+#
+#add_executable(test_libhdfs_read
+#    main/native/libhdfs/test/test_libhdfs_read.c
+#)
+#target_link_libraries(test_libhdfs_read
+#    hdfs
+#    ${JAVA_JVM_LIBRARY}
+#)
+#
+#add_executable(test_libhdfs_write
+#    main/native/libhdfs/test/test_libhdfs_write.c
+#)
+#target_link_libraries(test_libhdfs_write
+#    hdfs
+#    ${JAVA_JVM_LIBRARY}
+#)
 
 add_library(native_mini_dfs
     main/native/libhdfs/native_mini_dfs.c
@@ -143,34 +143,34 @@ target_link_libraries(native_mini_dfs
     hdfs
 )
 
-add_executable(test_native_mini_dfs
-    main/native/libhdfs/test_native_mini_dfs.c
-)
-target_link_libraries(test_native_mini_dfs
-    native_mini_dfs
-)
-
-add_executable(test_libhdfs_threaded
-    main/native/libhdfs/expect.c
-    main/native/libhdfs/test_libhdfs_threaded.c
-)
-target_link_libraries(test_libhdfs_threaded
-    hdfs
-    native_mini_dfs
-    pthread
-)
-
-add_executable(test_libhdfs_zerocopy
-    main/native/libhdfs/expect.c
-    main/native/libhdfs/test/test_libhdfs_zerocopy.c
-)
-target_link_libraries(test_libhdfs_zerocopy
-    hdfs
-    native_mini_dfs
-    pthread
-)
-
-IF(REQUIRE_LIBWEBHDFS)
-    add_subdirectory(contrib/libwebhdfs)
-ENDIF(REQUIRE_LIBWEBHDFS)
-add_subdirectory(main/native/fuse-dfs)
+#add_executable(test_native_mini_dfs
+#    main/native/libhdfs/test_native_mini_dfs.c
+#)
+#target_link_libraries(test_native_mini_dfs
+#    native_mini_dfs
+#)
+#
+#add_executable(test_libhdfs_threaded
+#    main/native/libhdfs/expect.c
+#    main/native/libhdfs/test_libhdfs_threaded.c
+#)
+#target_link_libraries(test_libhdfs_threaded
+#    hdfs
+#    native_mini_dfs
+#    pthread
+#)
+#
+#add_executable(test_libhdfs_zerocopy
+#    main/native/libhdfs/expect.c
+#    main/native/libhdfs/test/test_libhdfs_zerocopy.c
+#)
+#target_link_libraries(test_libhdfs_zerocopy
+#    hdfs
+#    native_mini_dfs
+#    pthread
+#)
+#
+#IF(REQUIRE_LIBWEBHDFS)
+#    add_subdirectory(contrib/libwebhdfs)
+#ENDIF(REQUIRE_LIBWEBHDFS)
+#add_subdirectory(main/native/fuse-dfs)
