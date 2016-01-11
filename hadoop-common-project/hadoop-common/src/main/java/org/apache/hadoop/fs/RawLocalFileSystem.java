@@ -100,7 +100,9 @@ public class RawLocalFileSystem extends FileSystem {
     private long position;
 
     public LocalFSFileInputStream(Path f) throws IOException {
-      fis = new FileInputStream(pathToFile(f));
+      File ptf = pathToFile(f);
+      //LOG.info("Created file input stream for file: " + ptf.toString());
+      fis = new FileInputStream(ptf);
     }
     
     @Override
